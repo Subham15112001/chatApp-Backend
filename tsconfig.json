@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // Or "ESNext" for latest features
+    "module": "ESNext", // Changed to ES Modules (or "esmodule" if you prefer)
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node", // or "node16" or "nodenext" - important for ES Modules in Node.js
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "sourceMap": true, // Optional, but recommended for debugging
+    "resolveJsonModule": true // If you need to import JSON files as modules
+  },
+  "include": [
+    "src/**/*",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

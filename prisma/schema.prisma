@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  name      String?
+  email     String?   @unique
+  password  String 
+  gender Gender @default(MALE)
+  profilePicture String?
+  lastSeen  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messagesSent  Message[] @relation("Sender")
+  messagesReceived Message[] @relation("Receiver")
+  chats         Chat[]    @relation("UserChats")
+}
+
+model Chat {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]   @relation("UserChats")  // Participants in the chat (always 2 users for 1-on-1)
+  messages  Message[] @relation("ChatMessages") // Messages within the chat
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sender      User     @relation("Sender", fields: [senderId], references: [id])
+  senderId    Int
+  receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
+  receiverId  Int
+  chat      Chat     @relation("ChatMessages", fields: [chatId], references: [id])
+  chatId    Int
+  seen      Boolean @default(false)
+  delivered Boolean @default(false)
+}
+
+enum Gender {
+ MALE
+ FEMALE
+}
+
+

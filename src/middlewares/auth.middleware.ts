@@ -11,11 +11,14 @@ interface decodedTokenType {
 }
 
 
-interface MyRequest extends Request {
-    user: Omit<User, 'password'> & { password?: string }
+declare module 'express' {
+    interface Request {
+        user?: Omit<User, "password">&{password?:string};
+    }
 }
 
-export const verifyJWT = asyncHandler(async (req:MyRequest, res:Response, next:NextFunction) => {
+
+export const verifyJWT = asyncHandler(async (req:Request, res:Response, next:NextFunction) => {
 
     try {
         const token = req.headers['authorization']?.split(' ')[1];
@@ -45,6 +48,6 @@ export const verifyJWT = asyncHandler(async (req:MyRequest, res:Response, next:N
 
         next();
     } catch (error) {
-        throw new ApiError(401, "Access token has expired");
+        throw new ApiError(401, "invalid authenticaion ");
     }
 })

@@ -20,6 +20,7 @@ model User {
   email     String?   @unique
   password  String 
   gender Gender @default(MALE)
+  refreshToken String?
   profilePicture String?
   lastSeen  DateTime?
   createdAt DateTime @default(now())

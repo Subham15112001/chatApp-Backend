@@ -10,7 +10,7 @@ const prisma = new PrismaClient().$extends({
             async isPasswordCorrect(password: string,reqPassword: string):Promise<boolean>{
                 return await bcrypt.compare(reqPassword, password)
             },
-            generateRefreshToken(userId:string):string|null{
+            generateRefreshToken(userId:number):string|null{
 
                 return jwt.sign(
                     {
@@ -22,7 +22,7 @@ const prisma = new PrismaClient().$extends({
                     }
                 )
             },
-            generateAccessToken(userId:string):string|null{
+            generateAccessToken(userId:number):string|null{
                 return jwt.sign(
                     {
                         id: userId

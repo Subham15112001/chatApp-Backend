@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 import prisma from '../utils/index.js';
 import {Request,Response, NextFunction } from "express";
 import { ParamsDictionary,ParsedQs } from "../types/asyncHandler.types.js";
-import { registerUserReqBody, registerUserResBody } from "../types/user.types.js";
+import { registerUserReqBody, UserResBody ,loginUserReqBody} from "../types/user.types.js";
 
 const generateAccessTokenandRefreshToken = async (userId:number) => {
     try {
@@ -33,15 +33,13 @@ const generateAccessTokenandRefreshToken = async (userId:number) => {
 }
 
 
-const registerUser = asyncHandler<ParamsDictionary, registerUserResBody, registerUserReqBody>(async (
-    req: Request<ParamsDictionary, registerUserResBody, registerUserReqBody, ParsedQs>, // Explicitly type req
-    res: Response<registerUserResBody>, // Explicitly type res
+const registerUser = asyncHandler<ParamsDictionary, UserResBody, registerUserReqBody>(async (
+    req: Request<ParamsDictionary, UserResBody, registerUserReqBody, ParsedQs>, // Explicitly type req
+    res: Response<UserResBody>, // Explicitly type res
     next: NextFunction // Explicitly type next
 )  => {
     const { username, email, password } = req.body;
 
-    console.log(req.body)
-    
     if ([username, email].some((value) => String(value)?.trim() === "")) {
         throw new ApiError(400, "All fields are necessary");
     }
@@ -92,6 +90,65 @@ const registerUser = asyncHandler<ParamsDictionary, registerUserResBody, registe
         }, "created user successfully"))
 })
 
+const loginUser = asyncHandler<ParamsDictionary, UserResBody, loginUserReqBody>(async (
+    req: Request<ParamsDictionary, UserResBody, loginUserReqBody, ParsedQs>, 
+    res:Response<UserResBody>, 
+    next:NextFunction
+) => {
+    const { email, password } = req.body;
+
+    let userExist = await prisma.user.findUnique({
+        where: {
+            email: email
+        }
+    })
+
+    if (!userExist) {
+        throw new ApiError(404, "user does not exist")
+    }
+
+    let comparePassword = await prisma.user.isPasswordCorrect(userExist.password, password)
+
+    if (!comparePassword) {
+        throw new ApiError(401, "user password is wrong")
+    }
+
+    const { accessToken, refreshToken } = await generateAccessTokenandRefreshToken(userExist.id)
+
+    const loginUser = await prisma.user.update({
+        where: {
+            id: userExist.id
+        },
+        data: {
+            refreshToken: refreshToken
+        }
+    })
+
+    
+
+    if (!loginUser) {
+        throw new ApiError(405, "error in login")
+    }
+
+    const option = {
+        httpOnly: true,
+        secure: true
+    }
+
+     res.status(201)
+        .cookie("accessToken", accessToken, option)
+        .cookie("refreshToken", refreshToken, option)
+        .json(new ApiResponse(200, {
+            user: loginUser,
+            accessToken,
+            refreshToken
+        },
+            "user login successfully"
+        ))
+
+})
+
 export {
-    registerUser
+    registerUser,
+    loginUser
 }

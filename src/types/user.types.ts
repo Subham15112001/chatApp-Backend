@@ -5,9 +5,14 @@ export type registerUserReqBody = {
     password:string
 }
 
-export type registerUserResBody = {
+export type UserResBody = {
      statusCode: number,
      data: object,
      message: string,
      success: boolean
+}
+
+export type loginUserReqBody = { 
+    email:string,
+    password:string
 }

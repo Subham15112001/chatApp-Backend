@@ -5,10 +5,10 @@ const app = express();
 
 //cofigur cors
 app.use(cors({
-    origin: 'http://localhost:5173', // Ensure no trailing slash
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    credentials: true,
-    optionsSuccessStatus: 204
+    origin: 'http://localhost:5173', // No trailing slash!
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization','x-retry'],
+    credentials: true
 }))
 
 //limit json size
@@ -30,7 +30,9 @@ app.get('/', (req, res) => {
 
 //routes import 
 import userRouter from './routes/user.routes.js'
+import messageRouter from "./routes/messages.routes.js";
 
 app.use("/api/v1/users", userRouter)
+app.use("/api/v1/messages",messageRouter)
 
 export { app }

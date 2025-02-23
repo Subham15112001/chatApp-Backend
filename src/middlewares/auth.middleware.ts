@@ -21,9 +21,9 @@ declare module 'express' {
 export const verifyJWT = asyncHandler(async (req:Request, res:Response, next:NextFunction) => {
 
     try {
-        const token = req.headers['authorization']?.split(' ')[1];
+        const token = req.headers['authorization']?.split(' ')[1] || req.cookies['accessToken'];
 
-        console.log(token)
+       
         if (!token) {
             throw new ApiError(401, "unauthorised request")
         }

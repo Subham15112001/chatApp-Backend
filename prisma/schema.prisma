@@ -15,7 +15,7 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
-  username  String   @unique
+  username  String  
   name      String?
   email     String?   @unique
   password  String 
@@ -26,34 +26,47 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  messagesSent  Message[] @relation("Sender")
-  messagesReceived Message[] @relation("Receiver")
-  chats         Chat[]    @relation("UserChats")
+  sentMessages     Message[]  @relation("SentMessages")
+  receivedMessages Message[]  @relation("ReceivedMessages")
+  initiatedChats   Chat[]    @relation("ChatInitiator")
+  participatedChats Chat[]   @relation("ChatParticipant")
 }
 
+// Chat model (represents a direct chat between two users)
 model Chat {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  users     User[]   @relation("UserChats")  // Participants in the chat (always 2 users for 1-on-1)
-  messages  Message[] @relation("ChatMessages") // Messages within the chat
+  // Relations
+  initiatorId  Int
+  initiator    User     @relation("ChatInitiator", fields: [initiatorId], references: [id])
+  participantId Int
+  participant  User     @relation("ChatParticipant", fields: [participantId], references: [id])
+  messages     Message[]
+
+  @@unique([initiatorId, participantId])
+  @@index([initiatorId])
+  @@index([participantId])
 }
 
+// Message model
 model Message {
   id        Int      @id @default(autoincrement())
   content   String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  sender      User     @relation("Sender", fields: [senderId], references: [id])
-  senderId    Int
-  receiver    User     @relation("Receiver", fields: [receiverId], references: [id])
-  receiverId  Int
-  chat      Chat     @relation("ChatMessages", fields: [chatId], references: [id])
+  
+  // Relations
   chatId    Int
-  seen      Boolean @default(false)
-  delivered Boolean @default(false)
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  senderId  Int
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId Int
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([receiverId])
 }
 
 enum Gender {

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import * as core from 'express-serve-static-core';
 import { ParamsDictionary,ParsedQs } from "../types/asyncHandler.types";
-
+import  prisma  from "./index";
 
 type AsyncRequestHandler<
     P = ParamsDictionary, // type for req.params, default to ParamsDictionary
@@ -25,7 +25,7 @@ const asyncHandler = <
         res: Response<ResBody, ResLocals>,
         next: NextFunction
     ) => {
-        Promise.resolve(requestHandler(req, res, next)).catch((err: any) => next(err));
+        Promise.resolve(requestHandler(req, res, next)).catch((err: any) => next(err)).finally(async() => { await prisma.$disconnect(); });
     };
 };
 
